@@ -11,7 +11,7 @@ var Board = {
     catPoints: [],
     barrierPoints: [],
     element: null
-} 
+}
 
 Board.cat = [
     [0, 0, 1, 0, 0, 0, 1],
@@ -42,15 +42,22 @@ Board.init = function() {
     Board.treeLocs = [[38, 10]]
     Board.catPoints = []
     Board.barrierPoints = []
+    Board.timer = {}
+}
+
+Board.handleKeydown = function(e) {
+    if (e.keyCode == 32 && e.target == document.body) {
+        e.preventDefault();
+        Board.jump()
+    }
 }
 
 Board.bindKeyPress = function() {
-    window.onkeydown = function(e) {
-        if (e.keyCode == 32 && e.target == document.body) {
-            e.preventDefault();
-            Board.jump()
-        }
-    };
+    window.addEventListener('keydown', Board.handleKeydown);
+}
+
+Board.unbindKeyPress = function() {
+    window.removeEventListener('keydown', Board.handleKeydown);
 }
 
 Board.setUpInterval = function() {
@@ -62,7 +69,7 @@ Board.setUpIntervalFall = function() {
     if (!Game.running || Game.paused) {
         return false
     }
-    setTimeout(function() {
+    Board.timer.fall = setTimeout(function() {
         Board.fall()
         Board.setUpIntervalFall()
     }, Game.intervalFall)
@@ -72,7 +79,7 @@ Board.setUpIntervalMove = function() {
     if (!Game.running || Game.paused) {
         return false
     }
-    setTimeout(function() {
+    Board.timer.move = setTimeout(function() {
         Board.move()
         if (Game.score % 50 == 0) {
             Game.intervalMove = Math.ceil(Game.intervalMove * 0.8)
@@ -103,7 +110,7 @@ Board.open = function() {
 			var j = 0
 				ul.querySelectorAll('li').forEach(function(li) {
 					li.setAttribute('id', 'p-' + j + '-' + i)
-						// Board.pointDebug(li) 
+						// Board.pointDebug(li)
 						j += 1
 				})
 			i += 1
@@ -113,10 +120,10 @@ Board.open = function() {
 		Game.container.appendChild(element)
 
     	Board.refresh()
-	} 
+	}
 }
 
-Board.start = function() { 
+Board.start = function() {
     Board.refresh()
     Board.bindKeyPress()
     Board.setUpInterval()
@@ -139,7 +146,7 @@ Board.clear = function() {
     Board.barrierPoints = []
 }
 
-Board.draw = function(matrix, loc, type) { 
+Board.draw = function(matrix, loc, type) {
     var p
     var color
     for (r in matrix) {
@@ -153,16 +160,16 @@ Board.draw = function(matrix, loc, type) {
                 continue
             }
             id = 'p-' + y + '-' + x
-            p = document.getElementById(id) 
+            p = document.getElementById(id)
             if (matrix[r][c] != 0) {
                 if (type == 'cat') {
-                   Board.catPoints.push(id) 
+                   Board.catPoints.push(id)
                 } else {
                    Board.barrierPoints.push(id)
                 }
             }
             Board.fill(p, Board['color' + matrix[r][c]])
-        }     
+        }
     }
 }
 
@@ -188,7 +195,7 @@ Board.jump = function() {
             Board.catLoc = [Board.catLoc[0], Board.catLoc[1] - step]
             Board.refresh()
         }
-    } 
+    }
 }
 
 Board.fall = function() {
@@ -221,7 +228,7 @@ Board.move = function() {
     })
 
     if ((Board.tubeLocs.length + Board.treeLocs.length) < 3 && Math.random() > 0.2) {
-        Board.generateBarrier()  
+        Board.generateBarrier()
     }
 
     Board.refresh()
@@ -230,11 +237,11 @@ Board.move = function() {
 Board.generateBarrier = function() {
     var rand = Math.random()
     if (rand < 0.3) {
-        Board.tubeLocs.push([Board.col - 1, 0]) 
+        Board.tubeLocs.push([Board.col - 1, 0])
     } else if (rand < 0.7) {
-        Board.tubeLocs.push([Board.col - 1, Board.row - Board.tube.length]) 
+        Board.tubeLocs.push([Board.col - 1, Board.row - Board.tube.length])
     } else {
-        Board.treeLocs.push([Board.col - 1, Board.row - Board.tree.length]) 
+        Board.treeLocs.push([Board.col - 1, Board.row - Board.tree.length])
     }
 }
 
@@ -242,23 +249,23 @@ Board.check = function() {
     if (!Game.running) {
         return false
     }
-    Board.catPoints.every(function(p) { 
+    Board.catPoints.every(function(p) {
         if (Board.barrierPoints.indexOf(p) > -1) {
             Board.die()
-            return false 
+            return false
         }
         return true
-    }) 
+    })
 }
 
 Board.die = function() {
-	Game.die() 
+	Game.die()
     Board.flash(6)
 }
 
 Board.flash = function(times) {
     if (times > 0) {
-        setTimeout(function(){
+        Board.timer.flash = setTimeout(function(){
             document.getElementById(Board.id).querySelectorAll('li').forEach(function(li){
                 if (Board.color(li) == Board.color0) {
                     Board.fill(li, Board.color1)
@@ -275,6 +282,10 @@ Board.close = function() {
     if (Board.element) {
         Board.element.parentNode.removeChild(Board.element)
         Board.element = null
+        Board.unbindKeyPress()
+        Object.keys(Board.timer).forEach(function(n) {
+          clearTimeout(Board.timer[n])
+        })
     }
 }
 
