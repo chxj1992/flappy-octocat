@@ -6,3 +6,7 @@
 
 ![screenshot](screenshot.gif)
 
+
+1. Install the extension from [Chrome Web Store](https://chrome.google.com/webstore/detail/flappy-octocat/jjjhhlomhbdmnfgaccmddhmjfeekjlbl?utm_source=chrome-ntp-icon)
+2. Press 'Space' to jump. Have fun!
+
