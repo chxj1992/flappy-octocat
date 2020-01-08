@@ -7,7 +7,7 @@ var Game = {
     score: 0
 }
 
-Game.graph = document.querySelector('.js-contribution-graph')
+Game.graph = document.querySelector('.js-calendar-graph')
 Game.container = document.querySelector('.js-calendar-graph').parentNode
 Game.legend = document.querySelector('.contrib-legend')
 
